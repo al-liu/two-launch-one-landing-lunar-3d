@@ -1,0 +1,24 @@
+{
+  "name": "two-launches-one-landing",
+  "private": true,
+  "version": "1.0.0",
+  "description": "两次发射、一次登月 —— 中国载人月球探测工程 3D 交互式科普作品",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.187.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.8"
+  }
+}
