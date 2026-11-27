@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#02040a" />
+    <meta name="description" content="《两次发射、一次登月》——用实时 3D 交互叙事讲清楚中国载人登月方案：两次发射、环月对接。" />
+    <title>两次发射、一次登月 · 中国载人月球探测工程</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23070b14'/%3E%3Ccircle cx='20.5' cy='12.5' r='6.5' fill='%23e9edf3'/%3E%3Cpath d='M5 27.5c3.5-10 10-15 18-16' fill='none' stroke='%23f3c969' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='5.5' cy='26.5' r='3' fill='%233d7fd6'/%3E%3C/svg%3E" />
+    <script type="module" crossorigin src="./assets/index-C7WY2xR0.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Cs77hlx9.css">
+  </head>
+  <body>
+    <canvas id="gl" aria-label="三维动画画面"></canvas>
+    <div id="labels" aria-hidden="true"></div>
+    <div id="grain"></div>
+    <div id="fade"></div>
+
+    <header id="topbar">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <div class="brand-text">
+          <strong>两次发射、一次登月</strong>
+          <small>中国载人月球探测工程 · 交互式科普</small>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="btnSubtitles" class="icon-btn" title="字幕开关" aria-label="字幕开关" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 12h4M13 12h4M7 15.5h3M12.5 15.5h4.5"/></svg>
+        </button>
+        <button id="btnSound" class="icon-btn" title="声音开关" aria-label="声音开关" aria-pressed="false">
+          <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></svg>
+          <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+        </button>
+        <button id="btnFullscreen" class="icon-btn" title="全屏" aria-label="全屏">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9V5h4M15 5h4v4M19 15v4h-4M9 19H5v-4"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <aside id="whyPanel" class="panel" aria-live="polite">
+      <div class="panel-title"><span class="dot"></span>为什么这样设计</div>
+      <p id="whyText"></p>
+    </aside>
+
+    <section id="statusPanel" class="panel" aria-label="任务状态">
+      <div class="panel-title"><span class="dot"></span>任务状态</div>
+      <div class="counters">
+        <div class="counter" id="cLaunch"><span class="c-num">0<i>/2</i></span><span class="c-label">发射</span></div>
+        <div class="counter" id="cDock"><span class="c-num">0<i>/2</i></span><span class="c-label">对接</span></div>
+        <div class="counter" id="cOrbit"><span class="c-num">0</span><span class="c-label">留轨人数</span></div>
+        <div class="counter" id="cMoon"><span class="c-num">0</span><span class="c-label">登月人数</span></div>
+      </div>
+      <div class="crew" id="crewRow"></div>
+      <div class="sample" id="sampleRow"><span class="s-icon"></span><span id="sampleText">月球样品：—</span></div>
+    </section>
+
+    <div id="actTag"><span id="actIndex">01</span><span id="actName">序章</span></div>
+    <div id="subtitle" class="on"></div>
+    <div id="hint">拖拽旋转 · 滚轮缩放 · 点击发光点查看部件</div>
+    <button id="btnDirector" class="ghost-btn" hidden>回到导演机位</button>
+
+    <div id="minimap">
+      <canvas id="mmCanvas"></canvas>
+      <div class="mm-head"><span>地月全景</span><span id="mmPhase">地球</span></div>
+    </div>
+
+    <div id="pipFrame" hidden><span>慢镜头 · 特写</span></div>
+    <div id="roadmap" class="panel" aria-label="全流程路线图"></div>
+    <div id="milestones" class="panel" aria-label="研制进展"></div>
+    <div id="closing" aria-hidden="true"></div>
+
+    <div id="infoCard" hidden>
+      <button id="infoClose" class="icon-btn" aria-label="关闭">×</button>
+      <div id="infoKicker"></div>
+      <h3 id="infoTitle"></h3>
+      <ul id="infoList"></ul>
+    </div>
+
+    <footer id="controls">
+      <div id="actTimeline" role="tablist" aria-label="分幕时间轴"></div>
+      <div id="scrubWrap">
+        <span id="timeNow">00:00</span>
+        <div id="scrub" role="slider" aria-label="幕内进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="scrub-track"><div class="scrub-fill" id="scrubFill"></div><div class="scrub-knob" id="scrubKnob"></div></div>
+          <div class="scrub-marks" id="scrubMarks"></div>
+        </div>
+        <span id="timeTotal">00:00</span>
+      </div>
+      <div id="transport">
+        <button id="btnPrev" class="t-btn" title="上一幕（←）" aria-label="上一幕"><svg viewBox="0 0 24 24"><path d="M7 5v14M19 6l-9 6 9 6z"/></svg></button>
+        <button id="btnPlay" class="t-btn primary" title="播放/暂停（空格）" aria-label="播放">
+          <svg class="ico-play" viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z"/></svg>
+          <svg class="ico-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+        </button>
+        <button id="btnNext" class="t-btn" title="下一幕（→）" aria-label="下一幕"><svg viewBox="0 0 24 24"><path d="M17 5v14M5 6l9 6-9 6z"/></svg></button>
+        <button id="btnReplay" class="t-btn" title="重播" aria-label="重播"><svg viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5M6.5 3.5v3.5H10"/></svg></button>
+        <button id="btnSpeed" class="t-btn text" title="播放速度" aria-label="播放速度">1×</button>
+      </div>
+    </footer>
+
+    <div id="startOverlay">
+      <div class="start-inner">
+        <p class="start-kicker">中国载人月球探测工程</p>
+        <h1>两次发射<span>、</span>一次登月</h1>
+        <p class="start-sub">一次载人登月任务，为什么要发射两枚火箭？<br />用 5 分钟的 3D 动画，把整个过程走一遍。</p>
+        <button id="btnStart">开始播放</button>
+        <p class="start-note">全程可拖拽旋转、缩放 · 约 5 分钟 · 建议开启声音</p>
+      </div>
+      <p class="start-credit">数据来自公开报道，造型与轨道为示意</p>
+    </div>
+
+    <div id="disclaimer">数据来自公开报道，造型与轨道为示意</div>
+    <script>
+      // collect console errors so automated checks can read them back
+      window.__log = [];
+      for (const k of ['error', 'warn']) {
+        const orig = console[k].bind(console);
+        console[k] = (...a) => {
+          if (window.__log.length < 200) window.__log.push(k + ': ' + a.map((x) => (x && x.message) || String(x)).join(' '));
+          orig(...a);
+        };
+      }
+      addEventListener('error', (e) => window.__log.push('uncaught: ' + e.message));
+      addEventListener('unhandledrejection', (e) => window.__log.push('rejection: ' + String(e.reason)));
+    </script>
+  </body>
+</html>
