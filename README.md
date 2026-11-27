@@ -8,7 +8,7 @@ GLM5.4，约1.72亿token，用时7小时14分。缓存命中的上下文约 1.66
 - 纯前端：模型与贴图全部由代码生成，不依赖外部素材
 - 事实克制：名称与数字只取自公开报道，未公布的数据不出现；界面固定标注"数据来自公开报道，造型与轨道为示意"
 
-![](/Users/liuhaichuan/Documents/02_Work/Freelance/glm54activity/image.png)
+![](./image.png)
 
 
 
